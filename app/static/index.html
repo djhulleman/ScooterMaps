@@ -1,0 +1,279 @@
+<!doctype html>
+<html lang="nl">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="Lokale routeplanner voor snorfiets, bromfiets, fiets en openbaar vervoer in Amsterdam.">
+  <title>ScooterMaps — Amsterdam</title>
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' fill='%23e2231a'/%3E%3Cpath d='m8 8 4 4m0-4-4 4m6 2 4 4m0-4-4 4m6 2 4 4m0-4-4 4' stroke='white' stroke-width='2.5'/%3E%3C/svg%3E">
+  <link rel="preconnect" href="https://tile.openstreetmap.org">
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
+  <link rel="stylesheet" href="/static/styles.css">
+</head>
+<body>
+  <div class="app-shell">
+    <header class="topbar">
+      <div class="brand" aria-label="ScooterMaps">
+        <span class="brand-mark" aria-hidden="true"><i>×</i><i>×</i><i>×</i></span>
+        <span class="brand-name">Scooter<span>Maps</span></span>
+        <span class="city-label">AMS</span>
+      </div>
+      <div class="top-actions">
+        <span class="data-chip" id="dataChip"><span class="pulse"></span><span>Data laden…</span></span>
+        <button class="quiet-button" id="openOverrides" type="button" aria-haspopup="dialog">
+          <svg aria-hidden="true" viewBox="0 0 24 24"><path d="M4 6h16M7 12h10M10 18h4"/></svg>
+          <span class="button-label">Correcties</span>
+        </button>
+      </div>
+    </header>
+
+    <main class="workspace">
+      <aside class="planner" aria-label="Route plannen">
+        <div class="planner-intro">
+          <div>
+            <p class="eyebrow">Lokale routeplanner</p>
+            <h1>Waar ga je heen?</h1>
+          </div>
+          <button class="swap-button" id="swapPoints" type="button" title="Keer vertrek en bestemming om" aria-label="Keer vertrek en bestemming om">
+            <svg aria-hidden="true" viewBox="0 0 24 24"><path d="M7 7h11l-3-3M17 17H6l3 3"/></svg>
+          </button>
+        </div>
+
+        <section class="location-stack" aria-label="Vertrek en bestemming">
+          <div class="route-rail" aria-hidden="true"><span>A</span><i></i><span>B</span></div>
+          <div class="address-field">
+            <label for="startInput">Vertrek</label>
+            <div class="input-row">
+              <input id="startInput" autocomplete="off" placeholder="Adres of plek in Amsterdam">
+              <button class="pin-button active" data-pick="start" type="button" aria-label="Kies vertrek op de kaart" title="Kies op de kaart">
+                <svg aria-hidden="true" viewBox="0 0 24 24"><path d="M12 21s6-5 6-11a6 6 0 1 0-12 0c0 6 6 11 6 11Z"/><circle cx="12" cy="10" r="2"/></svg>
+              </button>
+            </div>
+            <div class="suggestions" id="startSuggestions" role="listbox"></div>
+          </div>
+          <div class="address-field">
+            <label for="endInput">Bestemming</label>
+            <div class="input-row">
+              <input id="endInput" autocomplete="off" placeholder="Adres of plek in Amsterdam">
+              <button class="pin-button" data-pick="end" type="button" aria-label="Kies bestemming op de kaart" title="Kies op de kaart">
+                <svg aria-hidden="true" viewBox="0 0 24 24"><path d="M12 21s6-5 6-11a6 6 0 1 0-12 0c0 6 6 11 6 11Z"/><circle cx="12" cy="10" r="2"/></svg>
+              </button>
+            </div>
+            <div class="suggestions" id="endSuggestions" role="listbox"></div>
+          </div>
+        </section>
+
+        <section class="choice-block">
+          <div class="section-label"><span>Voertuig</span><span class="help" title="Blauw en geel zijn aparte juridische profielen.">?</span></div>
+          <div class="segmented" data-group="vehicle">
+            <button class="selected" data-value="snorfiets" type="button">
+              <span class="plate blue"></span>
+              <span><strong>Snorfiets</strong><small>Blauwe plaat · 25 km/u</small></span>
+            </button>
+            <button data-value="bromfiets" type="button">
+              <span class="plate yellow"></span>
+              <span><strong>Bromfiets</strong><small>Gele plaat · 45 km/u</small></span>
+            </button>
+            <button data-value="fiets" type="button">
+              <span class="bike-glyph" aria-hidden="true">◇</span>
+              <span><strong>Fiets</strong><small>Fiets + openbaar vervoer</small></span>
+            </button>
+          </div>
+        </section>
+
+        <section class="choice-block bike-only" id="bikeModeBlock" hidden>
+          <div class="section-label"><span>Hoe wil je reizen?</span><span class="help" title="Vergelijken rekent meerdere complete deur-tot-deurroutes door.">?</span></div>
+          <div class="bike-modes" data-group="bikeMode">
+            <button class="selected" data-value="bike_all" type="button"><strong>Hele route fietsen</strong><small>Eigen fiets, van deur tot deur</small></button>
+            <button data-value="bike_transit" type="button"><strong>Fiets mee in OV</strong><small>Alleen waar en wanneer toegestaan</small></button>
+            <button data-value="park_transit" type="button"><strong>Parkeren + OV</strong><small>Fiets naar halte, laatste stuk lopen</small></button>
+            <button data-value="ov_fiets" type="button"><strong>OV + OV-fiets</strong><small>Huurfiets voor het laatste deel</small></button>
+            <button data-value="compare" type="button"><strong>Vergelijk alles</strong><small>Tijd, lopen, overstappen en toeslag</small></button>
+          </div>
+        </section>
+
+        <section class="time-box bike-only" id="timeBlock" hidden>
+          <div class="time-kind" data-group="timeKind">
+            <button class="selected" data-value="now" type="button">Nu</button>
+            <button data-value="depart" type="button">Vertrek om</button>
+            <button data-value="arrive" type="button">Aankomst om</button>
+          </div>
+          <input id="journeyTime" type="datetime-local" aria-label="Reisdatum en tijd" disabled>
+          <small>Tijdzone: Europe/Amsterdam · GTFS-kalender en ritten na middernacht worden lokaal verwerkt.</small>
+        </section>
+
+        <section class="choice-block compact">
+          <div class="section-label"><span>Routevoorkeur</span></div>
+          <div class="route-choice" data-group="preference">
+            <button class="selected" data-value="fast" type="button"><strong>Snelst legaal</strong><small>Minste reistijd</small></button>
+            <button data-value="quiet" type="button"><strong>Rustiger</strong><small>Mijdt drukke rijbanen</small></button>
+          </div>
+        </section>
+
+        <details class="vehicle-settings" id="scooterSettings">
+          <summary>
+            <span><strong>Voertuig & uitstootzone</strong><small id="vehicleSummary">Elektrisch · overal toegang</small></span>
+            <svg aria-hidden="true" viewBox="0 0 24 24"><path d="m7 9 5 5 5-5"/></svg>
+          </summary>
+          <div class="settings-grid">
+            <label>Aandrijving
+              <select id="powertrain">
+                <option value="electric">Elektrisch</option>
+                <option value="fuel">Brandstof</option>
+              </select>
+            </label>
+            <label>Bouwjaar
+              <input id="buildYear" type="number" min="1950" max="2035" value="2020">
+            </label>
+            <label class="check-row"><input id="exemption" type="checkbox"><span>Ik bezit een geldige ontheffing</span></label>
+          </div>
+        </details>
+
+        <details class="vehicle-settings bike-only" id="bikeSettings" hidden>
+          <summary>
+            <span><strong>Fiets- en overstapinstellingen</strong><small id="bikeSummary">Gewone fiets · 16 km/u · max. 1 overstap</small></span>
+            <svg aria-hidden="true" viewBox="0 0 24 24"><path d="m7 9 5 5 5-5"/></svg>
+          </summary>
+          <div class="settings-grid bike-settings-grid">
+            <label>Fietstype
+              <select id="bikeType"><option value="regular">Gewone fiets</option><option value="ebike">E-bike</option></select>
+            </label>
+            <label>Gemiddeld km/u
+              <input id="bikeSpeed" type="number" min="6" max="35" step="1" value="16">
+            </label>
+            <label>Max. fiets vóór OV (km)
+              <input id="maxAccessBike" type="number" min="0.2" max="25" step="0.5" value="6">
+            </label>
+            <label>Max. fiets na OV (km)
+              <input id="maxEgressBike" type="number" min="0.2" max="25" step="0.5" value="6">
+            </label>
+            <label>Max. overstappen
+              <select id="maxTransfers"><option value="0">0</option><option value="1" selected>1</option><option value="2">2</option><option value="3">3</option></select>
+            </label>
+            <label>Instapbuffer (min)
+              <input id="boardingBuffer" type="number" min="0" max="30" value="4">
+            </label>
+            <label>Overstapbuffer (min)
+              <input id="transferBuffer" type="number" min="0" max="30" value="5">
+            </label>
+            <label>Uitstapbuffer (min)
+              <input id="exitBuffer" type="number" min="0" max="30" value="3">
+            </label>
+            <fieldset class="mode-toggles">
+              <legend>OV-vormen</legend>
+              <label><input type="checkbox" id="allowTrain" checked>Trein</label>
+              <label><input type="checkbox" id="allowMetro" checked>Metro</label>
+              <label><input type="checkbox" id="allowTram" checked>Tram</label>
+              <label><input type="checkbox" id="allowBus" checked>Bus</label>
+              <label><input type="checkbox" id="allowFerry" checked>Pont</label>
+            </fieldset>
+            <details class="score-settings">
+              <summary>Routeweging aanpassen</summary>
+              <div>
+                <label>Tijd<input id="weightDuration" type="number" min="0" max="20" step="0.1" value="1"></label>
+                <label>Fiets-km<input id="weightBike" type="number" min="0" max="20" step="0.1" value="0.35"></label>
+                <label>Loopminuut<input id="weightWalk" type="number" min="0" max="20" step="0.1" value="0.8"></label>
+                <label>Overstap<input id="weightTransfer" type="number" min="0" max="60" step="1" value="7"></label>
+                <label>Euro toeslag<input id="weightSupplement" type="number" min="0" max="30" step="0.5" value="2"></label>
+              </div>
+            </details>
+            <label class="check-row"><input id="secureParking" type="checkbox" checked><span>Voorkeur voor bewaakt/overdekt parkeren</span></label>
+          </div>
+        </details>
+
+        <section class="parked-bike-card bike-only" id="parkedBikeCard" hidden>
+          <div><strong>Geparkeerde fiets onthouden</strong><small id="parkedBikeText"></small></div>
+          <div><button id="returnToBike" type="button">Plan terugreis</button><button id="clearParkedBike" type="button">Wis</button></div>
+        </section>
+
+        <button class="plan-button" id="planRoute" type="button">
+          <span>Plan mijn route</span>
+          <svg aria-hidden="true" viewBox="0 0 24 24"><path d="M5 12h14M14 7l5 5-5 5"/></svg>
+        </button>
+        <button class="example-link" id="exampleTrip" type="button">Probeer Leidseplein → Amstelstation</button>
+
+        <section class="result-panel" id="resultPanel" aria-live="polite" hidden>
+          <div class="result-heading">
+            <p class="eyebrow" id="resultEyebrow">Route gevonden</p>
+            <span class="confidence-badge" id="confidenceBadge">Middel</span>
+          </div>
+          <div class="route-tabs" id="routeTabs"></div>
+          <div class="warning-list" id="warningList"></div>
+          <div class="instruction-list" id="instructionList"></div>
+          <div class="parking-result" id="parkingResult" hidden></div>
+          <details class="technical-details">
+            <summary>Technische route-informatie <span id="segmentCount"></span></summary>
+            <div id="technicalList"></div>
+          </details>
+        </section>
+      </aside>
+
+      <section class="map-panel" aria-label="Kaart van Amsterdam">
+        <div id="map"></div>
+        <div class="map-corner-label" aria-hidden="true">52°22′N<br>4°54′E</div>
+        <div class="pick-hint" id="pickHint"><span>A</span>Klik je vertrekpunt op de kaart</div>
+        <div class="legend" id="legend">
+          <button class="legend-toggle" type="button" aria-expanded="true">Legenda <span>−</span></button>
+          <div class="legend-content">
+            <span><i class="road"></i>Rijbaan</span>
+            <span><i class="cycle"></i>Verplicht fietspad</span>
+            <span><i class="shared"></i>Fiets/bromfietspad</span>
+            <span><i class="ferry"></i>Pont</span>
+            <span><i class="uncertain"></i>Onzeker</span>
+            <span class="bike-legend"><i class="bike"></i>Fiets</span>
+            <span class="bike-legend"><i class="walk"></i>Lopen</span>
+            <span class="bike-legend"><i class="metro"></i>Metro/trein</span>
+            <span class="bike-legend"><i class="tram"></i>Tram/bus</span>
+          </div>
+        </div>
+        <div class="data-banner" id="dataBanner" hidden>
+          <div class="data-banner-top"><strong id="dataMessage">Kaartdata voorbereiden…</strong><span id="dataPercent">0%</span></div>
+          <div class="progress-track"><i id="dataProgress"></i></div>
+          <button id="retryData" type="button" hidden>Opnieuw proberen</button>
+        </div>
+        <div class="map-attribution-note">Routebeslissingen: ScooterMaps · Kaart: © OpenStreetMap</div>
+      </section>
+    </main>
+  </div>
+
+  <div class="drawer-backdrop" id="drawerBackdrop" hidden></div>
+  <aside class="override-drawer" id="overrideDrawer" aria-label="Lokale correcties" aria-hidden="true">
+    <div class="drawer-header">
+      <div><p class="eyebrow">Lokaal opgeslagen</p><h2>Correcties</h2></div>
+      <button id="closeOverrides" class="icon-button" type="button" aria-label="Sluiten">×</button>
+    </div>
+    <p class="drawer-copy">Alleen bevestigde permanente overrides beïnvloeden nieuwe routes. Tijdelijke meldingen blijven zichtbaar, maar worden niet automatisch toegepast.</p>
+    <div id="overrideList" class="override-list"></div>
+  </aside>
+
+  <dialog id="correctionDialog" class="correction-dialog">
+    <form method="dialog" id="correctionForm">
+      <div class="dialog-header">
+        <div><p class="eyebrow">Geselecteerd wegvak</p><h2 id="correctionTitle">Correctie melden</h2></div>
+        <button value="cancel" class="icon-button" aria-label="Sluiten">×</button>
+      </div>
+      <label>Wat klopt er niet?
+        <select id="correctionType" required>
+          <option value="forbidden_snorfiets">Verboden voor snorfiets</option>
+          <option value="forbidden_bromfiets">Verboden voor bromfiets</option>
+          <option value="allowed">Juist wel toegestaan</option>
+          <option value="wrong_direction">Verkeerde rijrichting</option>
+          <option value="wrong_path_type">Verkeerd type pad</option>
+          <option value="temporary">Tijdelijke fout</option>
+          <option value="other">Overige opmerking</option>
+        </select>
+      </label>
+      <label>Toelichting
+        <textarea id="correctionNote" rows="3" placeholder="Bijvoorbeeld: bord G11 is vorige week vervangen"></textarea>
+      </label>
+      <label class="check-card"><input id="correctionPermanent" type="checkbox"><span><strong>Als permanente lokale override toepassen</strong><small>Nieuwe routes gebruiken deze correctie automatisch.</small></span></label>
+      <div class="dialog-actions"><button value="cancel" class="secondary-button">Annuleren</button><button id="saveCorrection" value="default" class="plan-button">Correctie opslaan</button></div>
+    </form>
+  </dialog>
+
+  <div class="toast" id="toast" role="status" aria-live="polite"></div>
+
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+  <script src="/static/app.js"></script>
+</body>
+</html>

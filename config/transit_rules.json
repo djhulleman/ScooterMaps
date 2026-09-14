@@ -1,0 +1,86 @@
+{
+  "metadata": {
+    "name": "ScooterMaps fiets- en OV-regels",
+    "version": "2026.09-poc1",
+    "checked_on": "2026-09-14",
+    "timezone": "Europe/Amsterdam",
+    "gtfs_source": "https://gtfs.ovapi.nl/nl/gtfs-nl.zip",
+    "gtfs_information": "https://www2.ndovloket.nl/"
+  },
+  "routing": {
+    "default_max_transfers": 1,
+    "boarding_buffer_min": 4,
+    "transfer_buffer_min": 5,
+    "exit_buffer_min": 3,
+    "max_wait_min": 30,
+    "walk_speed_kmh": 4.8,
+    "regular_bike_speed_kmh": 16.0,
+    "ebike_speed_kmh": 22.0,
+    "cost_weights": {
+      "duration_min": 1.0,
+      "bike_km": 0.35,
+      "walk_min": 0.8,
+      "transfer": 7.0,
+      "supplement_eur": 2.0
+    }
+  },
+  "carriers": {
+    "GVB": {
+      "name": "GVB",
+      "ordinary_bicycle": {
+        "allowed": [
+          {"route_type": 1, "label": "metro"},
+          {"route_type": 0, "route_short_name": "26", "label": "tram 26"},
+          {"route_type": 4, "label": "veerpont", "free": true}
+        ],
+        "denied_route_types": [3],
+        "weekday_blocked_windows": [["07:00", "09:00"], ["16:00", "18:30"]],
+        "blocked_windows_exclude_public_holidays": true,
+        "ticket_name": "GVB Fietskaartje (Supplement Fiets)",
+        "ticket_price_eur": 2.30,
+        "capacity": "Metro en tram 26 hebben maximaal twee fietsplekken; plaats is niet gegarandeerd.",
+        "source": "https://www.gvb.nl/reisinformatie/reisregels-en-voorwaarden",
+        "price_source": "https://www.gvb.nl/reisproducten/uur-en-dagkaarten/fietskaartje",
+        "checked_on": "2026-09-14"
+      }
+    },
+    "IFF:NS": {
+      "name": "NS",
+      "ordinary_bicycle": {
+        "allowed_route_types": [2],
+        "weekday_allowed_windows": [["00:00", "06:30"], ["09:00", "16:00"], ["18:30", "24:00"]],
+        "all_day_weekends": true,
+        "all_day_public_holidays": true,
+        "public_holiday_exceptions": ["koningsdag"],
+        "all_day_months": [7, 8],
+        "denied_products": ["ICE", "EUROSTAR", "NIGHTJET", "INTERCITY BERLIJN", "IC BERLIJN"],
+        "ticket_name": "Fietskaart Dal",
+        "ticket_price_eur": 8.50,
+        "capacity": "Een fietsplek is niet gegarandeerd; neem bij een volle trein een volgende trein.",
+        "source": "https://www.ns.nl/reizen/in-de-trein/fiets-in-de-trein",
+        "checked_on": "2026-09-14"
+      }
+    }
+  },
+  "ov_fiets": {
+    "ticket_name": "OV-fiets",
+    "price_per_24h_eur": 4.80,
+    "same_location_return": true,
+    "max_days": 7,
+    "source": "https://www.ns.nl/producten/deur-tot-deur/ov-fiets",
+    "price_source": "https://www.ns.nl/binaries/_ht_1765286364236/content/assets/ns-nl/tarieven/2026/prijslijst-ov-fiets-2026.pdf",
+    "checked_on": "2026-09-14",
+    "stations": [
+      "Amsterdam Centraal", "Amsterdam Amstel", "Amsterdam Zuid",
+      "Amsterdam Sloterdijk", "Amsterdam Bijlmer ArenA", "Amsterdam Muiderpoort",
+      "Amsterdam RAI", "Amsterdam Science Park", "Amsterdam Lelylaan",
+      "Amsterdam Holendrecht"
+    ]
+  },
+  "parking_fallback": [
+    {"id": "fallback-centraal", "name": "Fietsenstalling Stationsplein", "lat": 52.37838, "lon": 4.89955, "covered": true, "secure": true, "capacity": null, "opening_hours": "onbekend", "confidence": "middel"},
+    {"id": "fallback-amstel", "name": "Fietsenstalling Amstelstation", "lat": 52.34648, "lon": 4.91772, "covered": true, "secure": true, "capacity": null, "opening_hours": "onbekend", "confidence": "middel"},
+    {"id": "fallback-zuid", "name": "Fietsenstalling Amsterdam Zuid", "lat": 52.33920, "lon": 4.87367, "covered": true, "secure": true, "capacity": null, "opening_hours": "onbekend", "confidence": "middel"},
+    {"id": "fallback-sloterdijk", "name": "Fietsenstalling Sloterdijk", "lat": 52.38878, "lon": 4.83712, "covered": true, "secure": true, "capacity": null, "opening_hours": "onbekend", "confidence": "middel"}
+  ]
+}

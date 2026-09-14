@@ -1,0 +1,55 @@
+{
+  "metadata": {
+    "name": "Amsterdamse lokale regels",
+    "version": "2026.09-poc1",
+    "checked_on": "2026-09-14",
+    "precision_note": "Handmatig gedigitaliseerde PoC-geometrie. Straatnamen en officiële bronnen zijn leidend; polygonen zijn conservatieve benaderingen."
+  },
+  "snorfiets_zone": {
+    "name": "Binnen de ring A10 (benadering)",
+    "confidence": "middel",
+    "source": "Gemeente Amsterdam / Leidraad CVC, gecontroleerd 2026-09-14",
+    "polygon": [[4.789,52.347],[4.800,52.326],[4.842,52.304],[4.919,52.300],[4.970,52.326],[4.966,52.370],[4.939,52.398],[4.894,52.412],[4.832,52.405],[4.792,52.382],[4.789,52.347]]
+  },
+  "snorfiets_exception_streets": [
+    "Transformatorweg", "Spaarndammerdijk", "Tasmanstraat", "Van Diemenstraat",
+    "Westerdoksdijk", "De Ruijterkade", "Piet Heinkade", "Panamalaan",
+    "Zeeburgerdijk", "Mauritskade", "Stadhouderskade", "Nassaukade",
+    "Houtmankade", "Prins Hendrikkade", "Kattenburgerstraat",
+    "Valkenburgerstraat", "Weesperstraat", "Wibautstraat", "Gooiseweg",
+    "Amsterdamsebrug", "Schellingwouderbrug", "Zuiderzeeweg", "IJburglaan"
+  ],
+  "prohibited_areas": [
+    {"name":"Singel bij het Spui","source":"Gemeente Amsterdam","confidence":"middel","bbox":[4.8868,52.3672,4.8893,52.3692]},
+    {"name":"Rembrandtplein","source":"Gemeente Amsterdam","confidence":"middel","bbox":[4.8950,52.3652,4.8982,52.3674]},
+    {"name":"Muntplein","source":"Gemeente Amsterdam","confidence":"middel","bbox":[4.8919,52.3659,4.8947,52.3677]},
+    {"name":"Rijksmuseumpassage","source":"Gemeente Amsterdam","confidence":"hoog","bbox":[4.8843,52.3594,4.8865,52.3607]},
+    {"name":"Cuyperspassage","source":"Gemeente Amsterdam","confidence":"hoog","bbox":[4.8990,52.3783,4.9018,52.3794]},
+    {"name":"Vondelpark","source":"Gemeente Amsterdam","confidence":"middel","bbox":[4.8470,52.3520,4.8792,52.3613]},
+    {"name":"Westerpark","source":"Gemeente Amsterdam","confidence":"middel","bbox":[4.8590,52.3830,4.8830,52.3940]},
+    {"name":"Oosterpark","source":"Gemeente Amsterdam","confidence":"middel","bbox":[4.9140,52.3585,4.9290,52.3655]},
+    {"name":"Sarphatipark","source":"Gemeente Amsterdam","confidence":"middel","bbox":[4.8920,52.3530,4.9015,52.3565]},
+    {"name":"Rembrandtpark","source":"Gemeente Amsterdam","confidence":"middel","bbox":[4.8380,52.3560,4.8505,52.3720]},
+    {"name":"Erasmuspark","source":"Gemeente Amsterdam","confidence":"middel","bbox":[4.8440,52.3730,4.8540,52.3800]},
+    {"name":"Amstelpark","source":"Gemeente Amsterdam","confidence":"middel","bbox":[4.8830,52.3240,4.8995,52.3345]}
+  ],
+  "ferry_restrictions": [
+    {"name_contains":"F9","vehicles":["snorfiets","bromfiets"],"reason":"Op veerpont F9 zijn alleen voetgangers en fietsen toegestaan.","source":"GVB"},
+    {"name_contains":"Sporenburg","vehicles":["snorfiets","bromfiets"],"reason":"Op veerpont F9 zijn alleen voetgangers en fietsen toegestaan.","source":"GVB"}
+  ],
+  "emission_zone": {
+    "name": "Uitstootvrije zone bebouwde kom Amsterdam (PoC-benadering)",
+    "confidence": "laag",
+    "source": "Gemeente Amsterdam dataset uitstootvrije zones; vereenvoudigd voor lokale fallback",
+    "polygon": [[4.745,52.300],[4.755,52.265],[4.845,52.255],[4.965,52.275],[5.020,52.325],[5.020,52.415],[4.955,52.440],[4.815,52.430],[4.745,52.385],[4.745,52.300]],
+    "excluded_places": ["Weesp", "Durgerdam", "Holysloot", "Ransdorp", "Schellingwoude", "Zunderdorp"],
+    "excluded_bboxes": [
+      [5.020,52.295,5.080,52.325],
+      [4.980,52.365,5.025,52.390],
+      [4.950,52.405,5.005,52.440],
+      [4.975,52.390,5.025,52.430],
+      [4.940,52.375,4.980,52.400],
+      [4.910,52.395,4.950,52.435]
+    ]
+  }
+}

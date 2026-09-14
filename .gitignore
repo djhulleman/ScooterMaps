@@ -1,0 +1,17 @@
+.venv/
+**/__pycache__/
+.pytest_cache/
+.edge-profile/
+screenshots/
+cache/
+pytest-cache-files-*/
+*.py[cod]
+data/*.pkl.gz
+data/geocache.json
+data/ndw_signs.json
+data/runtime_status.json
+data/gtfs/*.zip
+data/gtfs/*.sqlite
+data/gtfs/*.sqlite-journal
+data/bicycle_parking.json
+!data/.gitkeep

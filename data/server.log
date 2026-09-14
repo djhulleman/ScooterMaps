@@ -1,0 +1,26 @@
+INFO:     127.0.0.1:57393 - "POST /api/journey HTTP/1.1" 200 OK
+INFO:     127.0.0.1:57402 - "POST /api/journey HTTP/1.1" 200 OK
+INFO:     127.0.0.1:57406 - "POST /api/journey HTTP/1.1" 200 OK
+INFO:     127.0.0.1:57418 - "POST /api/journey HTTP/1.1" 422 Unprocessable Content
+INFO:     127.0.0.1:57418 - "POST /api/journey HTTP/1.1" 200 OK
+INFO:     127.0.0.1:52828 - "GET / HTTP/1.1" 200 OK
+INFO:     127.0.0.1:52828 - "GET /static/styles.css HTTP/1.1" 200 OK
+INFO:     127.0.0.1:58410 - "GET /static/app.js HTTP/1.1" 200 OK
+INFO:     127.0.0.1:52828 - "GET /api/status HTTP/1.1" 200 OK
+INFO:     127.0.0.1:52828 - "POST /api/route HTTP/1.1" 200 OK
+INFO:     127.0.0.1:52828 - "POST /api/route HTTP/1.1" 200 OK
+INFO:     127.0.0.1:52828 - "POST /api/journey HTTP/1.1" 200 OK
+INFO:     127.0.0.1:63472 - "GET / HTTP/1.1" 200 OK
+INFO:     127.0.0.1:63472 - "GET /static/styles.css HTTP/1.1" 200 OK
+INFO:     127.0.0.1:51487 - "GET /static/app.js HTTP/1.1" 200 OK
+INFO:     127.0.0.1:51487 - "GET /api/status HTTP/1.1" 200 OK
+INFO:     127.0.0.1:51487 - "POST /api/route HTTP/1.1" 200 OK
+INFO:     127.0.0.1:51487 - "POST /api/journey HTTP/1.1" 200 OK
+INFO:     127.0.0.1:59036 - "POST /api/journey HTTP/1.1" 200 OK
+INFO:     127.0.0.1:57127 - "GET / HTTP/1.1" 200 OK
+INFO:     127.0.0.1:57127 - "GET /static/styles.css HTTP/1.1" 200 OK
+INFO:     127.0.0.1:58464 - "GET /static/app.js HTTP/1.1" 200 OK
+INFO:     127.0.0.1:58464 - "GET /api/status HTTP/1.1" 200 OK
+INFO:     127.0.0.1:62114 - "POST /api/journey HTTP/1.1" 200 OK
+INFO:     127.0.0.1:49810 - "POST /api/journey HTTP/1.1" 422 Unprocessable Content
+INFO:     127.0.0.1:58013 - "POST /api/journey HTTP/1.1" 200 OK
