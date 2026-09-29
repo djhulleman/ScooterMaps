@@ -7,6 +7,7 @@ from dataclasses import asdict, dataclass
 from typing import Any
 
 import networkx as nx
+from shapely import get_coordinates, get_num_coordinates
 from .data_manager import network_manager
 from .emissions import evaluate_emission_access
 from .local_rules import is_exception_street, point_in_emission_zone, point_in_snorfiets_zone, prohibited_area_at
@@ -24,6 +25,11 @@ TAG_KEYS = (
 CONFIDENCE_ORDER = {"hoog": 0, "middel": 1, "laag": 2}
 _LEGAL_GRAPH_CACHE: dict[tuple[Any, ...], nx.MultiDiGraph] = {}
 _LEGAL_GRAPH_CACHE_LOCK = threading.Lock()
+_ACCESS_DECISION_TAGS = (
+    "highway", "traffic_sign", "mofa", "moped", "access", "vehicle",
+    "motor_vehicle", "oneway", "oneway:mofa", "oneway:moped", "route",
+    "maxspeed", "motorroad", "bicycle",
+)
 
 
 @dataclass(frozen=True)
@@ -68,6 +74,39 @@ def _midpoint(graph: nx.MultiDiGraph, u: Any, v: Any, data: dict[str, Any]) -> t
         (float(graph.nodes[u]["x"]) + float(graph.nodes[v]["x"])) / 2,
         (float(graph.nodes[u]["y"]) + float(graph.nodes[v]["y"])) / 2,
     )
+
+
+def _edge_midpoints(
+    graph: nx.MultiDiGraph,
+    edges: list[tuple[Any, Any, Any, dict[str, Any]]],
+) -> list[tuple[float, float]]:
+    """Return the same line midpoints as ``_midpoint`` in one vectorised pass."""
+    result: list[tuple[float, float] | None] = [None] * len(edges)
+    geometries: list[Any] = []
+    geometry_indexes: list[int] = []
+
+    for index, (u, v, _, data) in enumerate(edges):
+        geometry = data.get("geometry")
+        if geometry is not None and hasattr(geometry, "coords"):
+            geometries.append(geometry)
+            geometry_indexes.append(index)
+        else:
+            result[index] = (
+                (float(graph.nodes[u]["x"]) + float(graph.nodes[v]["x"])) / 2,
+                (float(graph.nodes[u]["y"]) + float(graph.nodes[v]["y"])) / 2,
+            )
+
+    if geometries:
+        coordinate_counts = get_num_coordinates(geometries)
+        coordinates = get_coordinates(geometries)
+        offset = 0
+        for index, coordinate_count in zip(geometry_indexes, coordinate_counts):
+            count = int(coordinate_count)
+            lon, lat = coordinates[offset + count // 2]
+            result[index] = (float(lon), float(lat))
+            offset += count
+
+    return [point for point in result if point is not None]
 
 
 def _nearest_node(graph: nx.MultiDiGraph, lon: float, lat: float, *, for_start: bool) -> tuple[Any, float]:
@@ -127,21 +166,47 @@ def _build_legal_graph(graph: nx.MultiDiGraph, settings: VehicleSettings) -> nx.
     legal.graph.update(graph.graph)
     legal.add_nodes_from(graph.nodes(data=True))
     overrides = load_collection().get("features", [])
+    has_permanent_override = any(
+        feature.get("properties", feature).get("permanent", False)
+        for feature in overrides
+    )
+    decision_cache: dict[tuple[Any, ...], AccessDecision] = {}
+    raw_edges = list(graph.edges(keys=True, data=True))
+    midpoints = _edge_midpoints(graph, raw_edges)
 
-    for u, v, key, raw_data in graph.edges(keys=True, data=True):
+    for (u, v, key, raw_data), (lon, lat) in zip(raw_edges, midpoints):
         data = dict(raw_data)
-        lon, lat = _midpoint(graph, u, v, data)
         zone = point_in_snorfiets_zone(lon, lat)
         exception = is_exception_street(data.get("name"))
         prohibited = prohibited_area_at(lon, lat)
-        decision = evaluate_edge_access(
-            data,
-            settings.profile,
-            inside_snorfiets_zone=zone,
-            exception_street=exception,
-            prohibited_area=prohibited,
-            overrides=overrides,
-        )
+        if has_permanent_override:
+            decision = evaluate_edge_access(
+                data,
+                settings.profile,
+                inside_snorfiets_zone=zone,
+                exception_street=exception,
+                prohibited_area=prohibited,
+                overrides=overrides,
+            )
+        else:
+            decision_key = (
+                zone,
+                exception,
+                prohibited,
+                "f9" in str(data.get("name", "")).lower(),
+                *(_stringify(data.get(tag)) for tag in _ACCESS_DECISION_TAGS),
+            )
+            decision = decision_cache.get(decision_key)
+            if decision is None:
+                decision = evaluate_edge_access(
+                    data,
+                    settings.profile,
+                    inside_snorfiets_zone=zone,
+                    exception_street=exception,
+                    prohibited_area=prohibited,
+                    overrides=overrides,
+                )
+                decision_cache[decision_key] = decision
         if decision.allowed is False:
             continue
         if not emission.allowed and point_in_emission_zone(lon, lat):

@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 from dataclasses import asdict, dataclass
+from functools import lru_cache
 from typing import Any, Iterable
 
 
@@ -36,8 +37,13 @@ def _scalar(value: Any) -> str:
     return "" if value is None else str(value)
 
 
-def _values(value: Any) -> set[str]:
-    return {part.strip().lower() for part in _scalar(value).replace(",", ";").split(";") if part.strip()}
+@lru_cache(maxsize=512)
+def _split_values(value: str) -> frozenset[str]:
+    return frozenset(part.strip().lower() for part in value.replace(",", ";").split(";") if part.strip())
+
+
+def _values(value: Any) -> frozenset[str]:
+    return _split_values(_scalar(value))
 
 
 def _has_any(tags: dict[str, Any], keys: Iterable[str], values: set[str]) -> bool:
@@ -55,8 +61,10 @@ def _parse_speed(value: Any, fallback: float) -> float:
 
 
 def _match_override(overrides: list[dict[str, Any]] | None, tags: dict[str, Any], profile: str) -> dict[str, Any] | None:
+    if not overrides:
+        return None
     osm_id = str(tags.get("osmid", tags.get("id", "")))
-    for item in overrides or []:
+    for item in overrides:
         properties = item.get("properties", item)
         if not properties.get("permanent", False):
             continue
