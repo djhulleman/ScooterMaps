@@ -109,15 +109,23 @@
   }
   async function planRoute() {
     if (!state.start || !state.end) { showToast("Kies eerst vertrek én bestemming — via adres of kaart."); return; }
-    const button = $("#planRoute"); const original = button.innerHTML; button.disabled = true; button.innerHTML = "Route berekenen…";
+    const button = $("#planRoute"); const status = $("#routeStatus"); const original = button.innerHTML;
+    const controller = new AbortController();
+    button.disabled = true; button.setAttribute("aria-busy", "true"); button.innerHTML = "Route berekenen…";
+    status.hidden = true;
+    const slowNotice = setTimeout(() => { status.textContent = "De eerste route na het starten kan een paar seconden duren; de kaart wordt nu voorbereid."; status.hidden = false; }, 1200);
+    const timeout = setTimeout(() => controller.abort(), 45000);
     try {
       const bicycle = state.profile === "fiets";
       const body = bicycle ? journeyPayload() : { start: { lat: state.start.lat, lon: state.start.lon }, end: { lat: state.end.lat, lon: state.end.lon }, vehicle: state.profile, preference: state.preference, powertrain: $("#powertrain").value, build_year: Number($("#buildYear").value), exemption: $("#exemption").checked };
-      const response = await fetch(bicycle ? "/api/journey" : "/api/route", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(body) }); const payload = await response.json();
+      const response = await fetch(bicycle ? "/api/journey" : "/api/route", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(body), signal: controller.signal }); const payload = await response.json().catch(() => ({}));
       if (!response.ok) throw new Error(Array.isArray(payload.detail) ? "Controleer de route-instellingen." : payload.detail || "Geen route gevonden.");
       state.resultKind = bicycle ? "journey" : "scooter"; state.routes = bicycle ? payload.options : payload.routes; state.selectedRoute = 0;
-      renderResults(payload.warnings || []); drawRoutes(); $("#resultPanel").hidden = false; if (window.innerWidth <= 820) $("#resultPanel").scrollIntoView({ behavior: "smooth", block: "start" });
-    } catch (error) { showToast(error.message); } finally { button.disabled = false; button.innerHTML = original; }
+      renderResults(payload.warnings || []); drawRoutes(); $("#resultPanel").hidden = false; status.hidden = true; if (window.innerWidth <= 820) $("#resultPanel").scrollIntoView({ behavior: "smooth", block: "start" });
+    } catch (error) {
+      const message = error.name === "AbortError" ? "De routeberekening duurt langer dan 45 seconden. Probeer het opnieuw; blijft dit gebeuren, herstart dan ScooterMaps." : error.message || "De route kon niet worden berekend.";
+      status.textContent = message; status.hidden = false; showToast(message);
+    } finally { clearTimeout(slowNotice); clearTimeout(timeout); button.disabled = false; button.removeAttribute("aria-busy"); button.innerHTML = original; }
   }
   $("#planRoute").addEventListener("click", planRoute);
 

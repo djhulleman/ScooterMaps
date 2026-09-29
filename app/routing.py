@@ -87,7 +87,9 @@ def _edge_midpoints(
 
     for index, (u, v, _, data) in enumerate(edges):
         geometry = data.get("geometry")
-        if geometry is not None and hasattr(geometry, "coords"):
+        # The OSM loader stores Shapely LineStrings here; demo edges omit the
+        # field. Avoid inspecting ``geometry.coords`` one line at a time.
+        if geometry is not None:
             geometries.append(geometry)
             geometry_indexes.append(index)
         else:

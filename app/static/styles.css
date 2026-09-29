@@ -129,6 +129,7 @@ h2 { font-size: 27px; }
 .plan-button { display: flex; align-items: center; justify-content: space-between; width: 100%; margin-top: 18px; padding: 14px 16px; border: 0; background: var(--red); color: white; font-weight: 800; cursor: pointer; box-shadow: 5px 5px 0 var(--ink); transition: transform .15s, box-shadow .15s, background .15s; }
 .plan-button:hover { background: var(--red-dark); transform: translate(2px,2px); box-shadow: 3px 3px 0 var(--ink); }
 .plan-button:disabled { opacity: .6; cursor: wait; }
+.route-status { margin: 12px 0 -2px; color: var(--muted); font-size: 12px; line-height: 1.4; }
 .example-link { width: 100%; margin-top: 13px; border: 0; background: none; color: var(--muted); font-size: 12px; text-decoration: underline; cursor: pointer; }
 
 .result-panel { margin-top: 28px; padding-top: 22px; border-top: 3px solid var(--ink); }
